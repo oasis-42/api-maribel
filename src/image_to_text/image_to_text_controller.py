@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from fastapi import APIRouter, UploadFile
 from google.cloud import vision
+from google.oauth2 import service_account
+import os
 import json
 
 from openai import OpenAI
@@ -9,12 +11,19 @@ client_chat_gpt = OpenAI()
 
 router = APIRouter(prefix="/api/v1/ocr", tags=["image_to_text"])
 
-client = vision.ImageAnnotatorClient()
+credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+
+if not credentials_json:
+    raise ValueError("Missing credentials")
+
+service_account_info = json.loads(credentials_json)
+credentials = service_account.Credentials.from_service_account_info(service_account_info)
+
+client = vision.ImageAnnotatorClient(credentials=credentials)
 
 
 class FeedbackDto(BaseModel):
     text: str
-
 
 @router.post("/feedback")
 async def get_feedback(dto: FeedbackDto):
