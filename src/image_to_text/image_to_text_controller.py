@@ -4,6 +4,7 @@ from google.cloud import vision
 from google.oauth2 import service_account
 import os
 import json
+import base64
 
 from openai import OpenAI
 
@@ -24,6 +25,10 @@ client = vision.ImageAnnotatorClient(credentials=credentials)
 
 class FeedbackDto(BaseModel):
     text: str
+
+
+class CapturedPicture(BaseModel):
+    base64: str
 
 @router.post("/feedback")
 async def get_feedback(dto: FeedbackDto):
@@ -56,6 +61,17 @@ async def get_feedback(dto: FeedbackDto):
         "avaliacao_redacao": json_content_avaliacao_redacao
     }
 
+@router.post("/base64")
+async def process_ocr(body: CapturedPicture):
+    content = base64.b64decode(body.base64)
+    image = vision.Image(content=content)
+    response = await client.document_text_detection(image=image)
+    average_confidence = get_average_confidence(response)
+    text = get_corrected_text(response)
+    return {
+        "text": text,
+        "confidence": average_confidence
+    }
 
 @router.post("/")
 async def process_ocr(file: UploadFile):
