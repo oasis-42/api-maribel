@@ -65,7 +65,7 @@ async def get_feedback(dto: FeedbackDto):
 async def process_ocr(body: CapturedPicture):
     content = base64.b64decode(body.base64)
     image = vision.Image(content=content)
-    response = await client.document_text_detection(image=image)
+    response = client.document_text_detection(image=image)
     average_confidence = get_average_confidence(response)
     text = get_corrected_text(response)
     return {
