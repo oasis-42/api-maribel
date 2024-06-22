@@ -1,12 +1,20 @@
-FROM python:3.12
+FROM python:3.12.4
+LABEL authors="joel"
 
-WORKDIR /code
+ENV PYTHONUNBUFFERED 1
+ENV POETRY_VERSION=1.8.3
 
-COPY ./requirements.txt /code/requirements.txt
+WORKDIR /app
 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip install "poetry==$POETRY_VERSION"
 
-COPY ./src /code/src
+COPY pyproject.toml poetry.lock /app/
 
-CMD uvicorn src.app:app --host 0.0.0.0 --port $PORT
+RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi
+
+COPY . /app/
+
+EXPOSE 8000
+
+CMD ["sh", "-c", "python manage.py migrate && poetry run gunicorn --bind 0.0.0.0:8081 api_maribel.wsgi:application"]
 
