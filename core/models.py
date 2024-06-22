@@ -12,8 +12,6 @@ class Skill(models.Model):
     skill = models.AutoField(primary_key=True, db_column='skill_id')
     skill_type = models.CharField(max_length=1)
     skill_description = models.CharField(max_length=100)
-    grade = models.IntegerField()
-    feedback = models.TextField()
 
 
 class Feedback(models.Model):

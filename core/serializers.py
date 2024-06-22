@@ -35,7 +35,7 @@ class ThemeSerializer(serializers.ModelSerializer):
 class SkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
-        fields = ['skill', 'skill_type', 'skill_description', 'grade', 'feedback']
+        fields = ['skill', 'skill_type', 'skill_description']
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
