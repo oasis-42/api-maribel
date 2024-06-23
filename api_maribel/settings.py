@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_spectacular',
     'whitenoise.runserver_nostatic',
+    'djoser',
     'core',
 ]
 
@@ -77,6 +78,14 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+}
+
+DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+    'USERNAME_RESET_CONFIRM_URL': 'email/reset/confirm/{uid}/{token}',
+    'ACTIVATION_URL': 'activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
+    'SERIALIZERS': {},
 }
 
 MIDDLEWARE = [
@@ -151,6 +160,19 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+EMAIL_BACKEND = 'django_ses.SESBackend'
+
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_SES_REGION_NAME = os.getenv('AWS_SES_REGION_NAME')
+AWS_SES_REGION_ENDPOINT = os.getenv('AWS_SES_REGION_ENDPOINT')
+
+EMAIL_FROM = os.getenv('EMAIL_FROM')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+
+AWS_SES_AUTO_THROTTLE = 0.5
 
 
 # Internationalization

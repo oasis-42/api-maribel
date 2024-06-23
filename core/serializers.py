@@ -71,9 +71,12 @@ class RefinedEssayTextSerializer(serializers.ModelSerializer):
 
 
 class MotivationalTextSerializer(serializers.ModelSerializer):
+    motivational_text_id = serializers.IntegerField(source='motivational_text')
+    theme_id = serializers.IntegerField(source='theme.theme')
+
     class Meta:
         model = MotivationalText
-        fields = ['motivational_text', 'theme', 'title', 'text']
+        fields = ['motivational_text_id', 'theme_id', 'title', 'text']
 
 
 class UserConfigSerializer(serializers.ModelSerializer):

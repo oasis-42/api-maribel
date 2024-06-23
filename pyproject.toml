@@ -24,6 +24,9 @@ hiredis = "^2.3.2"
 django-cors-headers = "^4.4.0"
 gunicorn = "^22.0.0"
 whitenoise = "^6.7.0"
+boto3 = "^1.34.131"
+django-ses = "^4.1.0"
+djoser = "^2.2.3"
 
 
 [build-system]
