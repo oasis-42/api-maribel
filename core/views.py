@@ -126,95 +126,126 @@ class FeedbackView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         text = serializer.validated_data['text']
+        theme_id = serializer.validated_data['theme_id']
 
-        chat_gpt_response_verificacao_redacao = client_chat_gpt.chat.completions.create(
-            model="gpt-4o",
-            response_format={"type": "json_object"},
-            messages=[
-                {"role": "system",
-                 "content": "Baseado no tema do enem de  2018, Manipulação do comportamento de usuário pelo controle de dados na internet.  Verifique se não de forma explícita e muito problemática os problemas listados a seguir: PLÁGIO: Grandes partes do texto são uma cópia de obras conhecidas sem menção ou citação.  FUGA DE TEMA: O texto apresentado não possui uma estrutura dissertativa argumentativa, ou não se enquadra ao tema proposto de forma alguma. VIOLAÇÕES DOS DIREITOS HUMANOS: O texto se usa de linguagem agressiva como opiniões pessoais do autor refletindo em violações dos direitos humanos. Em aspectos graves como, apologia a violência, preconceito, etc… Verifique se não há esse problema para o texto, e se não houver retorne apenas:  “TEXTO OK” Caso contrário, e exista um problema evidente, retorne apenas nas seguintes propriedades do json forma. falha: falha apontada dentro dos problemas listados. motivo: Trechos que se enquadrem e justificativas para ser enquadrado no problema apresentado. Considere esse problemas apresentados para texto enviado a seguir"},
-                {"role": "user", "content": text}
-            ]
-        )
+        try:
+            theme = Theme.objects.get(theme=theme_id)
 
-        json_content_verificacao_redacao = json.loads(chat_gpt_response_verificacao_redacao.choices[0].message.content)
+            json_content_refined_essay = self.get_refined_essay(text, theme)
+            json_content_essay_analysis = self.analyse_essay(text, theme)
 
-        theme = {
-            "title": "Manipulação do comportamento de usuário pelo controle de dados na internet",
-            "year": 2018
-        }
+            return Response({
+                "refinedEssay": json_content_refined_essay['refinedEssay'],
+                "essayAnalysis": json_content_essay_analysis["essayAnalysis"]
+            }, status=status.HTTP_200_OK)
+        except Theme.DoesNotExist:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-        chat_gpt_response_avaliacao_redacao = client_chat_gpt.chat.completions.create(
-            model="gpt-4o",
-            response_format={"type": "json_object"},
-            messages=[
-                {"role": "system",
-                 "content": """Baseado no tema do enem de 2018, Manipulação do comportamento de usuário pelo controle de dados na internet. 
-                 INSTRUÇÕES DE AVALIAÇÃO Avalie para todas as competências do ENEM: 
-                 1. Domínio da escrita formal da língua portuguesa 
-                 2. Compreender o tema e não fugir do que é proposto 
-                 3. Selecionar, relacionar, organizar e interpretar informações, fatos, opiniões e argumentos em defesa de um ponto de vista. 
-                 4. Conhecimento dos mecanismos linguísticos necessários para a construção da argumentação. 
-                 5. Respeito aos direitos humanos. 
-                 Assim, apresente as considerações para cada uma das 5 competências nas seguintes propriedades json, 
-                 todas as propriedades json com letras minúsculas, sem acento e seguindo camel case, o nome das propriedades em inglês mas o conteúdo em pt-br, 
-                 seguindo o seguinte formato deverá ser retornando  com um objeto do json para cada competência: 
-                 
-                 {
-                    "essayAnalysis": [
+    def analyse_essay(self, text, theme):
+        filter_by_theme = f"Baseado no tema do enem de {theme.year}, {theme.title}. "
+
+        content = """
+        INSTRUÇÕES DE AVALIAÇÃO Avalie para todas as competências do ENEM: 
+        1. Domínio da escrita formal da língua portuguesa 
+        2. Compreender o tema e não fugir do que é proposto 
+        3. Selecionar, relacionar, organizar e interpretar informações, fatos, opiniões e argumentos em defesa de um ponto de vista. 
+        4. Conhecimento dos mecanismos linguísticos necessários para a construção da argumentação. 
+        5. Respeito aos direitos humanos. 
+        Assim, apresente as considerações para cada uma das 5 competências nas seguintes propriedades json, 
+        todas as propriedades json com letras minúsculas, sem acento e seguindo camel case, o nome das propriedades em inglês mas o conteúdo em pt-br, 
+        seguindo o seguinte formato deverá ser retornando  com um objeto do json para cada competência: 
+         
+        {
+            "essayAnalysis": [
+                {
+                    "analyzedSkill": "1" 
+                    "grade": 120,
+                    "feedback": "",
+                    "successes": [
                         {
-                            "analyzedSkill": "1" 
-                            "grade": 120,
-                            "feedback": "",
-                            "successes": [
-                                {
-                                    "excerpt": "",
-                                    "reason": ""
-                                }                        
-                            ],
-                            "errors": [
-                                {
-                                    "excerpt": "",
-                                    "reason": ""
-                                    "howToCorrect": ""
-                                } 
-                            ]
-                        },
+                            "excerpt": "",
+                            "reason": ""
+                        }                        
+                    ],
+                    "errors": [
+                        {
+                            "excerpt": "",
+                            "reason": ""
+                            "howToCorrect": ""
+                        } 
                     ]
-                 } 
-                
-                Legenda:
-                analyzedSkill: o número de um a 1 referente a competência do ENEM.
-                grade: o número de 0 a 200 para a nota de competência analisada.
-                feedback: Parecer geral sobre a competência analisada.
-                successes: [
-                    {
-                        excerpt: trecho do texto que apresenta os acertos em relação a competência
-                        reason: explicação do motivo que o trecho está errado
-                    } 
-                ], 
-                errors: [
-                    {
-                        excerpt: trecho do texto que apresenta os erros em relação a competência
-                        reason: explicação do motivo que o trecho está errado
-                        howToCorrect: como corrigir o trecho que está errado
-                    } 
-                ] 
-                
-                Avalie utilizando as INSTRUÇÕES DE AVALIAÇÃO para a seguinte redação:"""},
+                },
+            ]
+        } 
+        
+        Legenda:
+        analyzedSkill: o número de um a 1 referente a competência do ENEM.
+        grade: o número de 0 a 200 para a nota de competência analisada.
+        feedback: Parecer geral sobre a competência analisada.
+        successes: [
+            {
+                excerpt: trecho do texto que apresenta os acertos em relação a competência
+                reason: explicação do motivo que o trecho está errado
+            } 
+        ], 
+        errors: [
+            {
+                excerpt: trecho do texto que apresenta os erros em relação a competência
+                reason: explicação do motivo que o trecho está errado
+                howToCorrect: como corrigir o trecho que está errado
+            } 
+        ] 
+        
+        Avalie utilizando as INSTRUÇÕES DE AVALIAÇÃO para a seguinte redação:
+        """
 
-                {"role": "user", "content": text}
+        return self.send_to_chat_gpt(content, filter_by_theme, text)
+
+    def get_refined_essay(self, text, theme):
+        filter_by_theme = f"Baseado no tema do enem de {theme.year}, {theme.title}. "
+
+        content = """
+        Corrija a redação a seguir, reescrevendo a mesma em um formato mais adequado as proposta de texto argumentativo aos moldes do Enem. 
+        Retorne um formato json seguindo camelCase no nome das propriedades, sem acento e com o nome das propriedades em inglês mas o conteúdo em pt-br,
+        seguindo o seguinte formato, deverá ser retornado um objeto json para introdução, desenvolvimento, conclusão.
+         
+        {
+            "refinedEssay": [
+                {
+                    "paragraphType": "introduction",
+                    "originalText": "orignal text",
+                    "refinedText": "revised text",
+                }, 
+            ]
+        }
+         
+        Legenda:
+        paragraphType: tipo do paragrafo, se é introdução (introduction), desenvolvimento (development) ou conclusão (conclusion)
+        originalText: trecho original do texto, antes da correção
+        refinedText: trecho corrigido e melhorado conforme as diretrizes do enem 
+        Aplique para o texto a seguir:
+        """
+
+        return self.send_to_chat_gpt(content, filter_by_theme, text)
+
+    def send_to_chat_gpt(self, content, filter_by_theme, text):
+        chat_gpt_response = client_chat_gpt.chat.completions.create(
+            model="gpt-4o",
+            response_format={"type": "json_object"},
+            messages=[
+                {
+                    "role": "system",
+                    "content": filter_by_theme + content
+                },
+                {
+                    "role": "user",
+                    "content": text
+                }
             ]
         )
-
-        json_content_avaliacao_redacao = json.loads(chat_gpt_response_avaliacao_redacao.choices[0].message.content)
-
-        return Response({
-            "verificacao_redacao": json_content_verificacao_redacao,
-            "essayAnalysis": json_content_avaliacao_redacao["essayAnalysis"]
-        }, status=status.HTTP_200_OK)
-
+        json_content = json.loads(chat_gpt_response.choices[0].message.content)
+        return json_content
 
 class RegisterView(APIView):
     serializer_class = UserSerializer
