@@ -1,7 +1,6 @@
 import json
 import base64
 
-from django.conf import settings
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -140,49 +139,71 @@ class FeedbackView(APIView):
 
         json_content_verificacao_redacao = json.loads(chat_gpt_response_verificacao_redacao.choices[0].message.content)
 
+        theme = {
+            "title": "Manipulação do comportamento de usuário pelo controle de dados na internet",
+            "year": 2018
+        }
+
+
         chat_gpt_response_avaliacao_redacao = client_chat_gpt.chat.completions.create(
             model="gpt-4o",
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system",
-                 "content": """Baseado no tema do enem de  2018, Manipulação do comportamento de usuário pelo controle de dados na internet. 
+                 "content": """Baseado no tema do enem de 2018, Manipulação do comportamento de usuário pelo controle de dados na internet. 
                  INSTRUÇÕES DE AVALIAÇÃO Avalie para todas as competências do ENEM: 
                  1. Domínio da escrita formal da língua portuguesa 
                  2. Compreender o tema e não fugir do que é proposto 
                  3. Selecionar, relacionar, organizar e interpretar informações, fatos, opiniões e argumentos em defesa de um ponto de vista. 
                  4. Conhecimento dos mecanismos linguísticos necessários para a construção da argumentação. 
                  5. Respeito aos direitos humanos. 
-                 Assim, apresente as considerações para cada uma das competências nas seguintes propriedades json, 
-                 todas as propriedades json com letras minúsculas, sem acento e seguindo camel case: 
+                 Assim, apresente as considerações para cada uma das 5 competências nas seguintes propriedades json, 
+                 todas as propriedades json com letras minúsculas, sem acento e seguindo camel case, o nome das propriedades em inglês mas o conteúdo em pt-br, 
+                 seguindo o seguinte formato deverá ser retornando  com um objeto do json para cada competência: 
                  
-                 [
+                 {
+                    "essayAnalysis": [
+                        {
+                            "analyzedSkill": "1" 
+                            "grade": 120,
+                            "feedback": "",
+                            "successes": [
+                                {
+                                    "excerpt": "",
+                                    "reason": ""
+                                }                        
+                            ],
+                            "errors": [
+                                {
+                                    "excerpt": "",
+                                    "reason": ""
+                                    "howToCorrect": ""
+                                } 
+                            ]
+                        },
+                    ]
+                 } 
+                
+                Legenda:
+                analyzedSkill: o número de um a 1 referente a competência do ENEM.
+                grade: o número de 0 a 200 para a nota de competência analisada.
+                feedback: Parecer geral sobre a competência analisada.
+                successes: [
                     {
-                        "analyzedSkill": "1" 
-                        "grade": 120,
-                        "feedback": "",
-                        "successes": [
-                            {
-                                "excerpt": "",
-                                "reason": ""
-                            }                        
-                        ],
-                        "errors": [
-                            {
-                                "excerpt": "",
-                                "reason": ""
-                                "howToCorrect": ""
-                            } 
-                        ]
-                    },
-                ]
-                 
-                 COMPETÊNCIA número e nome da competência do enem analisada 
-                 NOTA  Número de 0 a 200 para a nota da competência analisada 
-                 PARECER Parecer geral sobre a competência analisada 
-                 ACERTOS trechos do texto que apresentam acertos em relação a competência, apresentando o trecho e por que se aplica 
-                 ERROS trechos do texto que apresentam erros e por que se aplicam 
-                 SUGESTÕES apresentação dos trechos com erros, reescritos de uma forma mais adequada a competência analisada 
-                 Avalie utilizando as INSTRUÇÕES DE AVALIAÇÃO para a seguinte redação:"""},
+                        excerpt: trecho do texto que apresenta os acertos em relação a competência
+                        reason: explicação do motivo que o trecho está errado
+                    } 
+                ], 
+                errors: [
+                    {
+                        excerpt: trecho do texto que apresenta os erros em relação a competência
+                        reason: explicação do motivo que o trecho está errado
+                        howToCorrect: como corrigir o trecho que está errado
+                    } 
+                ] 
+                
+                Avalie utilizando as INSTRUÇÕES DE AVALIAÇÃO para a seguinte redação:"""},
+
                 {"role": "user", "content": text}
             ]
         )
@@ -191,7 +212,7 @@ class FeedbackView(APIView):
 
         return Response({
             "verificacao_redacao": json_content_verificacao_redacao,
-            "avaliacao_redacao": json_content_avaliacao_redacao
+            "essayAnalysis": json_content_avaliacao_redacao["essayAnalysis"]
         }, status=status.HTTP_200_OK)
 
 

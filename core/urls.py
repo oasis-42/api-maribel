@@ -20,5 +20,5 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls.jwt')),
     path('password/reset/confirm/<uid>/<token>/', password_reset_confirm, name='password_reset_confirm'),
     path('activate/<uid>/<token>/', activate, name='activate'),
-    path('motivational-texts/theme/<int:theme_id>/', MotivationalTextByThemeView.as_view(), name='motivational-texts-by-theme'),
+    path('api/motivational-texts/theme/<int:theme_id>/', MotivationalTextByThemeView.as_view(), name='motivational-texts-by-theme'),
 ]

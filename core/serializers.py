@@ -20,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class FeedbackDtoSerializer(serializers.Serializer):
     text = serializers.CharField()
+    theme_id = serializers.IntegerField()
 
 
 class CapturedPictureSerializer(serializers.Serializer):

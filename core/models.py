@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class Theme(models.Model):
     theme = models.AutoField(primary_key=True, db_column='theme_id')
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=255)
     year = models.IntegerField()
 
 
