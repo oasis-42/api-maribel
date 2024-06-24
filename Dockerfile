@@ -16,5 +16,5 @@ COPY . /app/
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && poetry run gunicorn --bind 0.0.0.0:$PORT api_maribel.wsgi:application"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && poetry run gunicorn --timeout 600 --workers 3 --bind 0.0.0.0:$PORT api_maribel.wsgi:application"]
 
