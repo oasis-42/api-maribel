@@ -19,7 +19,7 @@ from google.oauth2 import service_account
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from .models import RefinedEssayText, OriginalEssayText, Theme, UserConfig, MotivationalText
+from .models import RefinedEssayText, OriginalEssayText, Theme, UserConfig, MotivationalText, Skill
 from .serializers import FeedbackDtoSerializer, CapturedPictureSerializer, RefinedEssayTextSerializer, \
     OriginalEssayTextSerializer, ThemeSerializer, UserConfigSerializer, UserSerializer, MotivationalTextSerializer
 
@@ -62,10 +62,6 @@ def password_reset_confirm(request, uid, token):
     else:
         return HttpResponse('Token is invalid or has expired', status=400)
 
-class SendTestMailView(APIView):
-    def post(self, request):
-        send_mail("Teste", "TESTE ENVIO DE EMAIL", settings.EMAIL_FROM, ['contato@maribel.cloud'])
-        return Response(status=status.HTTP_200_OK)
 
 class TextExtractionView(APIView):
     permission_classes = [IsAuthenticated]
@@ -129,10 +125,17 @@ class FeedbackView(APIView):
         theme_id = serializer.validated_data['theme_id']
 
         try:
-            theme = Theme.objects.get(theme=theme_id)
+            theme = Theme.objects.get(theme_id=theme_id)
 
             json_content_refined_essay = self.get_refined_essay(text, theme)
             json_content_essay_analysis = self.analyse_essay(text, theme)
+
+            for item in json_content_essay_analysis['essayAnalysis']:
+                try:
+                    skill = Skill.objects.get(skill_id=item['analyzedSkill'])
+                    item['skillDescription'] = skill.skill_description
+                except Skill.DoesNotExist:
+                    return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             return Response({
                 "refinedEssay": json_content_refined_essay['refinedEssay'],
@@ -140,7 +143,6 @@ class FeedbackView(APIView):
             }, status=status.HTTP_200_OK)
         except Theme.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     def analyse_essay(self, text, theme):
         filter_by_theme = f"Baseado no tema do enem de {theme.year}, {theme.title}. "
@@ -214,7 +216,7 @@ class FeedbackView(APIView):
             "refinedEssay": [
                 {
                     "paragraphType": "introduction",
-                    "originalText": "orignal text",
+                    "originalText": "original text",
                     "refinedText": "revised text",
                 }, 
             ]
@@ -246,6 +248,7 @@ class FeedbackView(APIView):
         )
         json_content = json.loads(chat_gpt_response.choices[0].message.content)
         return json_content
+
 
 class RegisterView(APIView):
     serializer_class = UserSerializer
@@ -292,6 +295,7 @@ class UserConfigView(RetrieveUpdateAPIView):
     def get_queryset(self):
         user = self.request.user
         return UserConfig.objects.filter(user=user)
+
 
 class MotivationalTextByThemeView(generics.ListAPIView):
     serializer_class = MotivationalTextSerializer

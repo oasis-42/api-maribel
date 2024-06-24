@@ -30,7 +30,7 @@ class CapturedPictureSerializer(serializers.Serializer):
 class ThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Theme
-        fields = ['theme', 'title', 'year']
+        fields = ['theme_id', 'title', 'year']
 
 
 class SkillSerializer(serializers.ModelSerializer):
@@ -56,7 +56,7 @@ class SkillFeedbackSerializer(serializers.ModelSerializer):
 
 
 class OriginalEssayTextSerializer(serializers.ModelSerializer):
-    feedback_id = serializers.IntegerField(source='feedback.id')
+    feedback_id = serializers.IntegerField(source='feedback.feedback_id', read_only=True)
 
     class Meta:
         model = OriginalEssayText
@@ -72,8 +72,7 @@ class RefinedEssayTextSerializer(serializers.ModelSerializer):
 
 
 class MotivationalTextSerializer(serializers.ModelSerializer):
-    motivational_text_id = serializers.IntegerField(source='motivational_text')
-    theme_id = serializers.IntegerField(source='theme.theme')
+    theme_id = serializers.IntegerField(source='theme.theme_id', read_only=True)
 
     class Meta:
         model = MotivationalText
