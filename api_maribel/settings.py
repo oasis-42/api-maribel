@@ -58,12 +58,12 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 50,
-    # 'DEFAULT_THROTTLE_CLASSES': [
-    #     'rest_framework.throttling.UserRateThrottle'
-    # ],
-    # 'DEFAULT_THROTTLE_RATES': {
-    #     'user': '100/day'
-    # }
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '100/day'
+    }
 }
 
 SPECTACULAR_SETTINGS = {
@@ -84,7 +84,8 @@ DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': 'email/reset/confirm/{uid}/{token}',
     'ACTIVATION_URL': 'activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': True,
+    'SEND_ACTIVATION_EMAIL': False,
+    'SEND_CONFIRMATION_EMAIL': False,
     'SERIALIZERS': {},
 }
 
