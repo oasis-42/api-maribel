@@ -1,6 +1,15 @@
 from django.contrib import admin
 
-from core.models import Theme, Skill, Feedback, SkillFeedback, OriginalEssayText, RefinedEssayText, MotivationalText, UserConfig
+from core.models import (
+    Feedback,
+    MotivationalText,
+    OriginalEssayText,
+    RefinedEssayText,
+    Skill,
+    SkillFeedback,
+    Theme,
+    UserConfig,
+)
 
 admin.site.register(Theme)
 admin.site.register(Skill)

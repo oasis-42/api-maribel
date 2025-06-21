@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0005_rename_creation_date_feedback_creation_datetime_and_more'),
+        ("core", "0005_rename_creation_date_feedback_creation_datetime_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='skill',
-            name='skill_description',
+            model_name="skill",
+            name="skill_description",
             field=models.CharField(max_length=255),
         ),
     ]

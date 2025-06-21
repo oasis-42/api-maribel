@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0003_remove_skill_feedback_remove_skill_grade'),
+        ("core", "0003_remove_skill_feedback_remove_skill_grade"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='theme',
-            name='title',
+            model_name="theme",
+            name="title",
             field=models.CharField(max_length=255),
         ),
     ]

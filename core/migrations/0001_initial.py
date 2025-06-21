@@ -6,92 +6,172 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
+        ("auth", "0012_alter_user_first_name_max_length"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Feedback',
+            name="Feedback",
             fields=[
-                ('feedback', models.AutoField(db_column='feedback_id', primary_key=True, serialize=False)),
-                ('grade', models.IntegerField()),
-                ('quality', models.DecimalField(decimal_places=2, max_digits=5)),
-                ('creation_date', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(db_column='user_id', on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "feedback",
+                    models.AutoField(
+                        db_column="feedback_id", primary_key=True, serialize=False
+                    ),
+                ),
+                ("grade", models.IntegerField()),
+                ("quality", models.DecimalField(decimal_places=2, max_digits=5)),
+                ("creation_date", models.DateTimeField(auto_now_add=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        db_column="user_id",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Skill',
+            name="Skill",
             fields=[
-                ('skill', models.AutoField(db_column='skill_id', primary_key=True, serialize=False)),
-                ('skill_type', models.CharField(max_length=1)),
-                ('skill_description', models.CharField(max_length=100)),
-                ('grade', models.IntegerField()),
-                ('feedback', models.TextField()),
+                (
+                    "skill",
+                    models.AutoField(
+                        db_column="skill_id", primary_key=True, serialize=False
+                    ),
+                ),
+                ("skill_type", models.CharField(max_length=1)),
+                ("skill_description", models.CharField(max_length=100)),
+                ("grade", models.IntegerField()),
+                ("feedback", models.TextField()),
             ],
         ),
         migrations.CreateModel(
-            name='Theme',
+            name="Theme",
             fields=[
-                ('theme', models.AutoField(db_column='theme_id', primary_key=True, serialize=False)),
-                ('title', models.CharField(max_length=100)),
-                ('year', models.IntegerField()),
+                (
+                    "theme",
+                    models.AutoField(
+                        db_column="theme_id", primary_key=True, serialize=False
+                    ),
+                ),
+                ("title", models.CharField(max_length=100)),
+                ("year", models.IntegerField()),
             ],
         ),
         migrations.CreateModel(
-            name='UserConfig',
+            name="UserConfig",
             fields=[
-                ('user', models.OneToOneField(db_column='user_id', on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
-                ('generate_punctuation', models.BooleanField(default=False)),
-                ('expanded_correction', models.BooleanField(default=False)),
-                ('allow_notifications', models.BooleanField(default=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        db_column="user_id",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        serialize=False,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                ("generate_punctuation", models.BooleanField(default=False)),
+                ("expanded_correction", models.BooleanField(default=False)),
+                ("allow_notifications", models.BooleanField(default=True)),
             ],
         ),
         migrations.CreateModel(
-            name='EssayCorrectedText',
+            name="EssayCorrectedText",
             fields=[
-                ('feedback', models.OneToOneField(db_column='feedback_id', on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='core.feedback')),
-                ('introduction', models.TextField()),
-                ('development', models.TextField()),
-                ('conclusion', models.TextField()),
+                (
+                    "feedback",
+                    models.OneToOneField(
+                        db_column="feedback_id",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        serialize=False,
+                        to="core.feedback",
+                    ),
+                ),
+                ("introduction", models.TextField()),
+                ("development", models.TextField()),
+                ("conclusion", models.TextField()),
             ],
         ),
         migrations.CreateModel(
-            name='EssayOriginalText',
+            name="EssayOriginalText",
             fields=[
-                ('feedback', models.OneToOneField(db_column='feedback_id', on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='core.feedback')),
-                ('introduction', models.TextField()),
-                ('development', models.TextField()),
-                ('conclusion', models.TextField()),
+                (
+                    "feedback",
+                    models.OneToOneField(
+                        db_column="feedback_id",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        serialize=False,
+                        to="core.feedback",
+                    ),
+                ),
+                ("introduction", models.TextField()),
+                ("development", models.TextField()),
+                ("conclusion", models.TextField()),
             ],
         ),
         migrations.CreateModel(
-            name='SkillFeedback',
+            name="SkillFeedback",
             fields=[
-                ('skill_feedback', models.AutoField(primary_key=True, serialize=False)),
-                ('grade', models.IntegerField()),
-                ('text', models.TextField()),
-                ('feedback', models.ForeignKey(db_column='feedback_id', on_delete=django.db.models.deletion.CASCADE, to='core.feedback')),
-                ('skill', models.ForeignKey(db_column='skill_id', on_delete=django.db.models.deletion.DO_NOTHING, to='core.skill')),
+                ("skill_feedback", models.AutoField(primary_key=True, serialize=False)),
+                ("grade", models.IntegerField()),
+                ("text", models.TextField()),
+                (
+                    "feedback",
+                    models.ForeignKey(
+                        db_column="feedback_id",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.feedback",
+                    ),
+                ),
+                (
+                    "skill",
+                    models.ForeignKey(
+                        db_column="skill_id",
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        to="core.skill",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='MotivationalText',
+            name="MotivationalText",
             fields=[
-                ('motivational_text', models.AutoField(db_column='motivational_text_id', primary_key=True, serialize=False)),
-                ('title', models.CharField(max_length=200)),
-                ('text', models.TextField()),
-                ('theme', models.ForeignKey(db_column='theme_id', on_delete=django.db.models.deletion.CASCADE, to='core.theme')),
+                (
+                    "motivational_text",
+                    models.AutoField(
+                        db_column="motivational_text_id",
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("title", models.CharField(max_length=200)),
+                ("text", models.TextField()),
+                (
+                    "theme",
+                    models.ForeignKey(
+                        db_column="theme_id",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.theme",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='feedback',
-            name='theme',
-            field=models.ForeignKey(db_column='theme_id', on_delete=django.db.models.deletion.DO_NOTHING, to='core.theme'),
+            model_name="feedback",
+            name="theme",
+            field=models.ForeignKey(
+                db_column="theme_id",
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                to="core.theme",
+            ),
         ),
     ]

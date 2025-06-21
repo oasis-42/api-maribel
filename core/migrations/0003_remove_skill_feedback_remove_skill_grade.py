@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0002_rename_essayoriginaltext_originalessaytext_and_more'),
+        ("core", "0002_rename_essayoriginaltext_originalessaytext_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='skill',
-            name='feedback',
+            model_name="skill",
+            name="feedback",
         ),
         migrations.RemoveField(
-            model_name='skill',
-            name='grade',
+            model_name="skill",
+            name="grade",
         ),
     ]

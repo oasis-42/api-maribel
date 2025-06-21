@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0001_initial'),
+        ("core", "0001_initial"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='EssayOriginalText',
-            new_name='OriginalEssayText',
+            old_name="EssayOriginalText",
+            new_name="OriginalEssayText",
         ),
         migrations.RenameModel(
-            old_name='EssayCorrectedText',
-            new_name='RefinedEssayText',
+            old_name="EssayCorrectedText",
+            new_name="RefinedEssayText",
         ),
     ]

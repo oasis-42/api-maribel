@@ -1,34 +1,49 @@
-import json
 import base64
-
-from django.contrib.auth.forms import SetPasswordForm
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
-from django.utils.encoding import force_str
-from django.utils.http import urlsafe_base64_decode
-from openai import OpenAI
-from rest_framework.generics import RetrieveAPIView, ListAPIView, RetrieveUpdateAPIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, generics
-from google.cloud import vision
-from google.oauth2 import service_account
-from django.conf import settings
-from django.contrib.auth.models import User
-
-from .models import RefinedEssayText, OriginalEssayText, Theme, UserConfig, MotivationalText, Skill
-from .serializers import FeedbackDtoSerializer, CapturedPictureSerializer, RefinedEssayTextSerializer, \
-    OriginalEssayTextSerializer, ThemeSerializer, UserConfigSerializer, UserSerializer, MotivationalTextSerializer
+import json
 
 import openai
+from django.conf import settings
+from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+from google.cloud import vision
+from google.oauth2 import service_account
+from openai import OpenAI
+from rest_framework import generics, status
+from rest_framework.generics import ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import (
+    MotivationalText,
+    OriginalEssayText,
+    RefinedEssayText,
+    Skill,
+    Theme,
+    UserConfig,
+)
+from .serializers import (
+    CapturedPictureSerializer,
+    FeedbackDtoSerializer,
+    MotivationalTextSerializer,
+    OriginalEssayTextSerializer,
+    RefinedEssayTextSerializer,
+    ThemeSerializer,
+    UserConfigSerializer,
+    UserSerializer,
+)
 
 openai.api_key = settings.OPENAI_API_KEY
 
 service_account_info = json.loads(settings.GOOGLE_APPLICATION_CREDENTIALS_JSON)
-credentials = service_account.Credentials.from_service_account_info(service_account_info)
+credentials = service_account.Credentials.from_service_account_info(
+    service_account_info
+)
 client = vision.ImageAnnotatorClient(credentials=credentials)
 
 client_chat_gpt = OpenAI()
@@ -41,9 +56,9 @@ def activate(request, uid, token):
     if default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        return HttpResponse('Your account has been activated successfully.')
+        return HttpResponse("Your account has been activated successfully.")
     else:
-        return HttpResponse('Activation link is invalid!', status=400)
+        return HttpResponse("Activation link is invalid!", status=400)
 
 
 def password_reset_confirm(request, uid, token):
@@ -51,16 +66,20 @@ def password_reset_confirm(request, uid, token):
     user = User.objects.get(pk=uid)
 
     if default_token_generator.check_token(user, token):
-        if request.method == 'POST':
+        if request.method == "POST":
             form = SetPasswordForm(user, request.POST)
             if form.is_valid():
                 form.save()
-                return redirect('password_reset_complete')
+                return redirect("password_reset_complete")
         else:
             form = SetPasswordForm(user)
-        return render(request, 'password_reset_confirm.html', {'form': form, 'uid': uid, 'token': token})
+        return render(
+            request,
+            "password_reset_confirm.html",
+            {"form": form, "uid": uid, "token": token},
+        )
     else:
-        return HttpResponse('Token is invalid or has expired', status=400)
+        return HttpResponse("Token is invalid or has expired", status=400)
 
 
 class TextExtractionView(APIView):
@@ -73,29 +92,33 @@ class TextExtractionView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        content = base64.b64decode(serializer.validated_data['base64'])
+        content = base64.b64decode(serializer.validated_data["base64"])
         image = vision.Image(content=content)
         ocr_response = client.document_text_detection(image=image)
         average_confidence = self.get_average_confidence(ocr_response)
 
         try:
             text = self.get_corrected_text(ocr_response)
-            return Response({'text': text, 'confidence': average_confidence})
+            return Response({"text": text, "confidence": average_confidence})
         except ValueError:
-            return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def get_corrected_text(self, ocr_response):
         chat_gpt_response = client_chat_gpt.chat.completions.create(
             model="gpt-4o",
             response_format={"type": "json_object"},
             messages=[
-                {"role": "system",
-                 "content": """Você é um assistente que receberá um texto em portugues vindo de um OCR e corrigirá as 
+                {
+                    "role": "system",
+                    "content": """Você é um assistente que receberá um texto em portugues vindo de um OCR e corrigirá as 
                  palavras que achar incorretas visando um português valido, não criará um texto novo, apenas corrigirá 
                  as palavras que o OCR trouxer com gramática errada e retornará a resposta 
-                 em JSON com uma propriedade 'text'"""},
-                {"role": "user", "content": ocr_response.full_text_annotation.text}
-            ]
+                 em JSON com uma propriedade 'text'""",
+                },
+                {"role": "user", "content": ocr_response.full_text_annotation.text},
+            ],
         )
 
         json_content = json.loads(chat_gpt_response.choices[0].message.content)
@@ -121,8 +144,8 @@ class FeedbackView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        text = serializer.validated_data['text']
-        theme_id = serializer.validated_data['theme_id']
+        text = serializer.validated_data["text"]
+        theme_id = serializer.validated_data["theme_id"]
 
         try:
             theme = Theme.objects.get(theme_id=theme_id)
@@ -130,17 +153,20 @@ class FeedbackView(APIView):
             json_content_refined_essay = self.get_refined_essay(text, theme)
             json_content_essay_analysis = self.analyse_essay(text, theme)
 
-            for item in json_content_essay_analysis['essayAnalysis']:
+            for item in json_content_essay_analysis["essayAnalysis"]:
                 try:
-                    skill = Skill.objects.get(skill_id=item['analyzedSkill'])
-                    item['skillDescription'] = skill.skill_description
+                    skill = Skill.objects.get(skill_id=item["analyzedSkill"])
+                    item["skillDescription"] = skill.skill_description
                 except Skill.DoesNotExist:
                     return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            return Response({
-                "refinedEssay": json_content_refined_essay['refinedEssay'],
-                "essayAnalysis": json_content_essay_analysis["essayAnalysis"]
-            }, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "refinedEssay": json_content_refined_essay["refinedEssay"],
+                    "essayAnalysis": json_content_essay_analysis["essayAnalysis"],
+                },
+                status=status.HTTP_200_OK,
+            )
         except Theme.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -236,15 +262,9 @@ class FeedbackView(APIView):
             model="gpt-4o",
             response_format={"type": "json_object"},
             messages=[
-                {
-                    "role": "system",
-                    "content": filter_by_theme + content
-                },
-                {
-                    "role": "user",
-                    "content": text
-                }
-            ]
+                {"role": "system", "content": filter_by_theme + content},
+                {"role": "user", "content": text},
+            ],
         )
         json_content = json.loads(chat_gpt_response.choices[0].message.content)
         return json_content
@@ -257,7 +277,9 @@ class RegisterView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "User created successfully"}, status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -302,5 +324,5 @@ class MotivationalTextByThemeView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        theme_id = self.kwargs['theme_id']
+        theme_id = self.kwargs["theme_id"]
         return MotivationalText.objects.filter(theme_id=theme_id)

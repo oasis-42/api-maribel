@@ -29,6 +29,74 @@ django-ses = "^4.1.0"
 djoser = "^2.2.3"
 
 
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.12.0"
+
+[tool.ruff]
+# Caminhos para incluir/excluir arquivos
+include = ["*.py", "*.pyi", "**/pyproject.toml"]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".svn",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "build",
+    "dist",
+    "venv",
+]
+
+# Defina a versão mínima do Python que o Ruff deve considerar para verificações.
+# Mantenha isso sincronizado com a versão do Python do seu projeto.
+target-version = "py312" # Altere para 'py38' se você estiver usando Python 3.8
+
+# Configurações de linha. Esta propriedade 'line-length' vai aqui,
+# diretamente sob '[tool.ruff]', ou na seção de formatação abaixo.
+# Se você tiver `[tool.ruff.format]`, pode ser redundante aqui, mas não causará erro.
+line-length = 88
+
+# Ativa conjuntos específicos de regras de linting.
+[tool.ruff.lint]
+select = [
+    "E", "F", "W", # Erros e avisos básicos de estilo (Flake8, pycodestyle)
+    "I",          # Organização de imports (isort)
+    "N",          # Convenções de nomenclatura (pep8-naming)
+    "D",          # Docstrings (pydocstyle) - Se você usa docstrings
+    "UP",         # Atualizações de sintaxe Python (pyupgrade)
+    "C90",        # Complexidade ciclomática
+    "B",          # Bugbear (erros comuns e antipadrões)
+    "PLE", "PLC", # Pylint (erros e convenções de linting)
+]
+
+# Exclui algumas regras específicas que podem ser muito rigorosas ou não se aplicam ao seu projeto.
+ignore = [
+    "D203",  # Exclui regra de docstring: "1 blank line required before class docstring"
+    "N802",  # Exclui regra de nomenclatura: "Function name should be lowercase"
+]
+
+# Configurações para o subconjunto de regras D (docstrings).
+[tool.ruff.lint.pydocstyle]
+convention = "google" # Ex: "google", "numpy", "pep257"
+
+# Configurações para regras N (naming).
+[tool.ruff.lint.pep8-naming]
+# ignore-names = ["setUp", "tearDown"] # Exemplo de configuração específica
+
+# Configurações para o formatador do Ruff (opcional, se você usar `ruff format`).
+# Este 'line-length' específico para formatação vai aqui.
+# Se você já definiu 'line-length' em [tool.ruff], este é redundante,
+# mas permite configuração mais granular se necessário.
+[tool.ruff.format]
+
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

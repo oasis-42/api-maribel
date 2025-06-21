@@ -1,8 +1,8 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
-from ..models import RefinedEssayText, OriginalEssayText
-from ..serializers import RefinedEssayTextSerializer, OriginalEssayTextSerializer
+from ..models import OriginalEssayText, RefinedEssayText
+from ..serializers import OriginalEssayTextSerializer, RefinedEssayTextSerializer
 
 
 class RefinedEssayTextView(generics.RetrieveAPIView):
